@@ -1,4 +1,4 @@
-const { getRandomInt, sleep, log } = require('./helpers');
+const { getRandomInt, sleep, log } = require('../helpers');
 
 // Task delay
 const DELAY_MIN = process.env.NODE_ENV === 'production' ? 30000 : 1000;
