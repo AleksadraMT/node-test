@@ -1,24 +1,34 @@
-const queueService = require('../services/queueService');
+const {
+    createTask,
+    taskExist,
+    taskStatus,
+    taskPosition,
+    taskETD,
+    taskResult,
+    taskList,
+} = require('../services/queueService');
 
-module.exports.createTask = (req, res) => res.json(queueService.createTask());
+module.exports.createTask = (req, res) => res.json(createTask());
+
 module.exports.checkTask = (req, res) => {
     const id = Number(req.params.id);
 
     if (Number.isNaN(id)) {
-        res.status(400).json({ message: 'Bad id parameter' });
+        res.status(400).json({ message: 'Invalid id' });
+
         return;
     }
 
-    if (!queueService.taskExist(id)) {
+    if (!taskExist(id)) {
         res.status(400).json({ message: 'Task not found' });
+
         return;
     }
 
-    const status = queueService.taskStatus(id);
-    const position = queueService.taskPostion(id);
-    const etd = queueService.taskETD(id);
-    const result = queueService.taskResult(id);
-
+    const status = taskStatus(id);
+    const position = taskPosition(id);
+    const etd = taskETD(id);
+    const result = taskResult(id);
     const response = {
         status,
     };
@@ -29,4 +39,5 @@ module.exports.checkTask = (req, res) => {
 
     res.json(response);
 };
-module.exports.getList = (req, res) => res.json(queueService.taskList());
+
+module.exports.getList = (req, res) => res.json(JSON.stringify(taskList()));

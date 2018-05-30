@@ -1,90 +1,103 @@
-const { getRandomInt, sleep, log } = require('../helpers');
+const { getRandomInt, pause, } = require('../utils');
+const { IN_QUEUE, IN_PROGRESS, DONE, } = require('../status');
 
-// Task delay
-const DELAY_MIN = process.env.NODE_ENV === 'production' ? 30000 : 1000;
-const DELAY_MAX = process.env.NODE_ENV === 'production' ? 90000 : 3000;
+const Queue = (() => {
+    'use strict';
 
-// Task statuses
-const STATUS_QUEUE = 'in queue';
-const STATUS_PROGRESS = 'in progress';
-const STATUS_DONE = 'done';
+    // Task delay
+    const DELAY_MIN = process.env.NODE_ENV === 'production' ? 30000 : 1500;
+    const DELAY_MAX = process.env.NODE_ENV === 'production' ? 90000 : 4000;
 
-const queue = [];
+    const queue = [];
 
-let currentTaskIndex = null;
+    let currentTaskIndex = null;
 
-const startQueue = async () => {
-    currentTaskIndex = queue.length - 1;
-
-    log('[DEBUG] Queue started');
-    do {
-        log('[DEBUG] Task started, id:', currentTaskIndex);
-
-        queue[currentTaskIndex].status = STATUS_PROGRESS;
-
-        // eslint-disable-next-line no-await-in-loop
-        const time = await sleep(getRandomInt(DELAY_MIN, DELAY_MAX));
-
-        queue[currentTaskIndex].etd = time / 1000;
-        queue[currentTaskIndex].status = STATUS_DONE;
-        queue[currentTaskIndex].result = getRandomInt(1, 100);
-
-        log(
-            '[DEBUG] Task finished,',
-            'id:', currentTaskIndex,
-            'time:', time / 1000,
-            'result:', queue[currentTaskIndex].result,
-        );
-
-        if (currentTaskIndex + 1 === queue.length) {
-            currentTaskIndex = null;
-            break;
-        }
-
-        currentTaskIndex += 1;
-    } while (currentTaskIndex !== null);
-    log('[DEBUG] Queue finished');
-};
-
-const taskExist = id => id >= 0 && id < queue.length;
-
-const createTask = () => {
-    const etd = queue.length > 0
-        ? queue.reduce((prev, curr) => prev + curr.etd, 0) / queue.length
-: (DELAY_MIN + DELAY_MAX) / 2;
-
-    const newTask = {
-        status: STATUS_QUEUE,
-        result: null,
-        etd,
+    return {
+        createTask: createTask,
+        taskExist: taskExist,
+        taskStatus: taskStatus,
+        taskPosition: taskPosition,
+        taskETD: taskETD,
+        taskResult: taskResult,
+        taskList: taskList,
     };
 
-    log('[DEBUG] Task added, id:', queue.length);
-    queue.push(newTask);
+    async function startQueue () {
 
-    if (currentTaskIndex === null) startQueue();
+        currentTaskIndex = queue.length - 1;
 
-    return { id: queue.length - 1, etd };
-};
+        do {
+            console.log(`Have started ${currentTaskIndex} task`);
 
-const taskStatus = id => queue[id].status;
+            queue[currentTaskIndex].status = IN_PROGRESS;
 
-const taskPostion = id =>
-(queue[id].status === STATUS_QUEUE ? id - currentTaskIndex : null);
+            // set timeout on the task
+            const time = await pause(getRandomInt(DELAY_MIN, DELAY_MAX));
 
-const taskETD = id =>
-(queue[id].status !== STATUS_DONE ? queue[id].etd : null);
+            //update current task data
+            queue[currentTaskIndex].etd = time / 100;
+            queue[currentTaskIndex].status = DONE;
+            queue[currentTaskIndex].result = getRandomInt();
 
-const taskResult = id => queue[id].result;
+            currentTaskIndex = checkLastInQueue(queue, currentTaskIndex);
 
-const taskList = () => queue.map(({ etd }, id) => ({ etd, id }));
+            if (currentTaskIndex === null) break;
+        } while (currentTaskIndex !== null)
 
-module.exports = {
-    createTask,
-    taskExist,
-    taskStatus,
-    taskPostion,
-    taskETD,
-    taskResult,
-    taskList,
-};
+        console.log('The end of the queue');
+    }
+
+    function checkLastInQueue(queue, index) {
+        return index + 1 === queue.length ? null : index + 1;
+    }
+
+    function createTask() {
+        const etd = queue.length > 0 ? countETD() : (DELAY_MIN + DELAY_MAX) / 2;
+        const newTask = {
+            status: IN_QUEUE,
+            result: null,
+            etd,
+        };
+
+        queue.push(newTask);
+
+        console.log(`Task ${queue.length} is created and added to queue`);
+
+        if (currentTaskIndex === null) startQueue();
+
+        return {
+            id: queue.length - 1,
+            etd
+        };
+    }
+
+    function countETD() {
+        return queue.reduce((prev, sum) => prev + sum.etd, 0) / queue.length
+    }
+
+    function taskExist(id) {
+        return id >= 0 && id < queue.length;
+    }
+
+    function taskStatus(id) {
+        return queue[id].status;
+    }
+
+    function taskPosition(id) {
+        return (queue[id].status === IN_QUEUE ? id - currentTaskIndex : null);
+    }
+
+    function taskETD(id) {
+        return (queue[id].status !== DONE ? queue[id].etd : null);
+    }
+
+    function taskResult(id) {
+        return queue[id].result;
+    }
+
+    function taskList () {
+        return queue.map(({ etd }, id) => ({ etd, id }));
+    }
+})();
+
+module.exports = Queue;
