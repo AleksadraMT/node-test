@@ -11,8 +11,8 @@ _Server should have 3 endpoints and we should use Express.js_
 `status(in queue, in progress, done) 
 position(only if status is in queue)`
 
-`ETD(only if status is in queue or in progress)` - including task that is currently running
-result(only if status is done)
+`ETD (only if status is in queue or in progress)` - including task that is currently running
+result (only if status is done)
 
 `/list` - return array of objects with ID and ETD
 

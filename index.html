@@ -5,39 +5,52 @@
     <title>Node.js task - delegating to web server</title>
 </head>
 <body>
-<h1>Node.js task - delegating to web server</h1>
-Server have 3 endpoints and we should use Express.js:
-<ul>
-    <li><b>/create</b> - which will return unique ID and ETD for task that is
-        created for us, task should have two inputs by your choice
-    </li>
-    <li><b>/check</b> - which will return status of our task. Status should have fields:
-        <ul>
-            <li><b>status</b> - in queue, in progress, done</li>
-            <li><b>position</b> - (only if status is in queue)</li>
-        </ul>
-    </li>
-    <li><b>ETD</b> - (only if status is in queue or in progress) - including task that is currently running result(only
-        if status is done)
-    </li>
-    <li><b>/list</b> - return array of objects with ID and ETD</li>
-</ul>
+<form id="start-queue-form">
+    <button type="submit">Press the button to add more tasks to queue</button>
+</form>
+<hr>
+    <a href="/list" target="_blank">Check list</a>
+<hr>
 
-<i>Note:</i> all endpoints must validate params/body params and let us know if there is not task
+<p id="in-queue"></p>
+<p id="tasks-amount"></p>
+<div id="main">
+    <h1>Node.js task - delegating to web server</h1>
+    Server have 3 endpoints and we should use Express.js:
+    <ul>
+        <li><b>/create</b> - which will return unique ID and ETD for task that is
+            created for us, task should have two inputs by your choice
+        </li>
+        <li><b>/check</b> - which will return status of our task. Status should have fields:
+            <ul>
+                <li><b>status</b> - in queue, in progress, done</li>
+                <li><b>position</b> - (only if status is in queue)</li>
+            </ul>
+        </li>
+        <li><b>ETD</b> - (only if status is in queue or in progress) - including task that is currently running result(only
+            if status is done)
+        </li>
+        <li><b>/list</b> - return array of objects with ID and ETD</li>
+    </ul>
 
-<h3>Task definition</h3>
-Computation task don’t really needs to be real computation task. We can use setTimeout to represent heavy computation in
-interval of 30-90 seconds randomly. But have in mind that we are going to implement task directly in javascript so try
-to think of setTimeout as SYNC execution and how we should run that in order not to block everything.
-<br>
-<i>ETD</i> - Estimated Time of Delivery
-<br>
-Don’t overthink this. It can be calculated on current average time of execution time for all previous tasks.
-<br><br>
-<h3>Additional</h3>
-Using ES6 is huge plus<br>
-We don’t need to use any DB for this we can do everything in memory<br>
-We don’t recommend using immutability<br>
+    <i>Note:</i> all endpoints must validate params/body params and let us know if there is not task
 
+    <h3>Task definition</h3>
+    Computation task don’t really needs to be real computation task. We can use setTimeout to represent heavy computation in
+    interval of 30-90 seconds randomly. But have in mind that we are going to implement task directly in javascript so try
+    to think of setTimeout as SYNC execution and how we should run that in order not to block everything.
+    <br><br>
+    <i>ETD</i> - Estimated Time of Delivery
+    <br>
+    Don’t overthink this. It can be calculated on current average time of execution time for all previous tasks.
+    <br><br>
+    <h3>Additional</h3>
+    Using ES6 is huge plus<br>
+    We don’t need to use any DB for this we can do everything in memory<br>
+    We don’t recommend using immutability<br>
+</div>
+
+<script src="socket.io/socket.io.js"></script>
+<script src="main.js"></script>
 </body>
 </html>

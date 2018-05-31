@@ -7,11 +7,11 @@ const Utils = (() => {
     };
 
     function getRandomInt(MIN = 10, MAX = 1000) {
-        return Math.floor(Math.random() * (MAX - (MIN + 10))) + MIN;
+        return Math.round(Math.random() * (MAX - (MIN + 10))) + MIN;
     }
 
-    async function pause(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms, ms));
+    async function pause(time) {
+        return new Promise(resolve => setTimeout(resolve, time, time));
     }
 })();
 

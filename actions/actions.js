@@ -40,4 +40,4 @@ module.exports.checkTask = (req, res) => {
     res.json(response);
 };
 
-module.exports.getList = (req, res) => res.json(JSON.stringify(taskList()));
+module.exports.getList = (req, res) => res.status(200).json(taskList());

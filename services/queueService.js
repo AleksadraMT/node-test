@@ -1,5 +1,6 @@
-const { getRandomInt, pause, } = require('../utils');
-const { IN_QUEUE, IN_PROGRESS, DONE, } = require('../status');
+const { getRandomInt, pause, } = require('../helpers/utils');
+const { IN_QUEUE, IN_PROGRESS, DONE, } = require('../helpers/status');
+const io = require('../server');
 
 const Queue = (() => {
     'use strict';
@@ -23,12 +24,9 @@ const Queue = (() => {
     };
 
     async function startQueue () {
-
         currentTaskIndex = queue.length - 1;
 
-        do {
-            console.log(`Have started ${currentTaskIndex} task`);
-
+        while (currentTaskIndex !== null) {
             queue[currentTaskIndex].status = IN_PROGRESS;
 
             // set timeout on the task
@@ -41,10 +39,15 @@ const Queue = (() => {
 
             currentTaskIndex = checkLastInQueue(queue, currentTaskIndex);
 
-            if (currentTaskIndex === null) break;
-        } while (currentTaskIndex !== null)
+            if (currentTaskIndex + 1 === queue.length) {
+                currentTaskIndex = null;
 
-        console.log('The end of the queue');
+                break;
+            }
+
+            currentTaskIndex += 1;
+        }
+
     }
 
     function checkLastInQueue(queue, index) {
@@ -61,9 +64,9 @@ const Queue = (() => {
 
         queue.push(newTask);
 
-        console.log(`Task ${queue.length} is created and added to queue`);
-
         if (currentTaskIndex === null) startQueue();
+
+        io.emit('statusMessage', queue.length);
 
         return {
             id: queue.length - 1,
@@ -84,18 +87,18 @@ const Queue = (() => {
     }
 
     function taskPosition(id) {
-        return (queue[id].status === IN_QUEUE ? id - currentTaskIndex : null);
+        return queue[id].status === IN_QUEUE ? id - currentTaskIndex : null;
     }
 
     function taskETD(id) {
-        return (queue[id].status !== DONE ? queue[id].etd : null);
+        return queue[id].status !== DONE ? queue[id].etd : null;
     }
 
     function taskResult(id) {
         return queue[id].result;
     }
 
-    function taskList () {
+    function taskList() {
         return queue.map(({ etd }, id) => ({ etd, id }));
     }
 })();
